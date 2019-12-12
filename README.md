@@ -1,2 +1,4 @@
 # ElferRaus
-Elfer Raus! game
+Elfer Raus! game written in C++.
+
+Still ongoing.
