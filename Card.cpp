@@ -7,29 +7,15 @@ Card::Card()
   color = ' ';
 }
 
-Card::Card(short n, char c)
+Card::Card(int n, char c)
 {
   number = n;
   color = c;
 }
 
-short Card::generateNumber()
-{
-  short number = 3;
-
-  return number;
-}
-
-short Card::getNumber()
+int Card::getNumber()
 {
   return number;
-}
-
-char Card::generateColor()
-{
-  char color = 'R';
-
-  return color;
 }
 
 char Card::getColor()

@@ -5,18 +5,15 @@ class Card
 {
 public:
   Card();
-  Card(short n, char c);
-  short generateNumber();
-  short getNumber();
-
-  char generateColor();
+  Card(int n, char c);
+  int getNumber();
   char getColor();
 
   ~Card() {};
 
 private:
-  short number;
-  char color;
+  int number = 0;
+  char color = ' ';
 };
 
 #endif
