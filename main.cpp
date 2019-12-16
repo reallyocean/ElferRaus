@@ -44,14 +44,9 @@ int main()
   auto playerCount = getPlayerCount();
   auto allHands = deal(playerCount, deck);
   std::vector<Cards> tableDecks(12);
-  std::cout << "Size: " << tableDecks.size() << std::endl;
-  std::cout << "Size: " << tableDecks[0].size() << std::endl;
-  //std::cout << "To confirm this card is there, these should be blank: " << tableDecks[0][0].getColor() << " and number: " << tableDecks[0][0].getNumber() << "." << std::endl;
-
-
   std::cout << "Size of deck after dealing: " << deck.size() << std::endl;
   displayAllHands(allHands);
-
+  // After 
   firstMove(allHands, deck, tableDecks, playerCount);
 
   return 0;
