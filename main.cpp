@@ -18,11 +18,12 @@ void displayAllHands(std::vector<Cards>&);
 bool elevensInHands(Cards&);
 bool redElevenInHands(std::vector<Cards>&);
 bool elevenInHand(std::vector<Cards>&);
-void firstMove(std::vector<Cards>&, Cards&, std::vector<Cards>&);
+void firstMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int);
+void secondMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int);
 int getPlayer(std::vector<Cards>&, int, char);
-Cards::iterator positionOfEleven(Cards&);
-Cards::iterator positionOfCard(std::vector<Cards>&, int, int, char);
-void playRedEleven(Cards::iterator, Cards&, std::vector<Cards>&);
+Cards::iterator getPositionOfEleven(Cards&);
+Cards::iterator getPositionOfCard(std::vector<Cards>&, int, int, char);
+void playRedEleven(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
 void playCard(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
 bool cardIsRed(Card&);
 bool cardIsGreen(Card&);
@@ -31,6 +32,7 @@ bool cardIsYellow(Card&);
 bool cardIsLow(Card&);
 bool cardIsEleven(Card&);
 bool cardIsHigh(Card&);
+void draw(int, std::vector<Cards>&, Cards&);
 
 int main()
 {
@@ -50,7 +52,7 @@ int main()
   std::cout << "Size of deck after dealing: " << deck.size() << std::endl;
   displayAllHands(allHands);
 
-  firstMove(allHands, deck, tableDecks);
+  firstMove(allHands, deck, tableDecks, playerCount);
 
   return 0;
 }
@@ -140,7 +142,7 @@ bool redElevenInHands(std::vector<Cards>& allHands)
   return false;
 }
 
-void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks)
+void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
 {
   if (elevensInHands(deck))
   {
@@ -153,29 +155,52 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
       std::cout << "This is player " << player << ". Press Enter to play this card." << std::endl;
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       std::cin.ignore();
-      auto position = positionOfEleven(elevenHand);
-      playRedEleven(position, elevenHand, tableDecks);
-      std::cout << "To confirm this card is there, these should be R and 11: " << tableDecks[1][0].getColor() << " and number: " << tableDecks[1][0].getNumber() << "." << std::endl;
-      std::cout << "This is player " << player << "'s new hand: " << std::endl;
-
-      for (auto it = elevenHand.begin(); it != elevenHand.end(); ++it)
-      {
-        std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
-      }
-
-      std::cout << "Size of deck before drawing: " << deck.size() << std::endl;/*
-      std::cout << "Drawing card." << std::endl;
-      //draw(allHands);
-
-      std::cout << "This is player " << player << "'s new hand: " << std::endl;
-
-      for (auto it = elevenHand.begin(); it != elevenHand.end(); ++it)
-      {
-        std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
-      }
-      std::cout << "Size of deck after drawing: " << deck.size() << std::endl;*/
+      auto position = getPositionOfCard(allHands, player, 11, 'R');
+      playRedEleven(position, allHands, tableDecks, player);
+    }
+    else
+    {
+      std::cout << "Eleven in the hand but it's not red." << std::endl;
     }
   }
+  else
+  {
+    std::cout << "Size of deck before drawing: " << deck.size() << std::endl;
+    std::cout << "Eleven is not in hands. Drawing." << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
+    int player{1};
+    int count{1};
+
+    while (!elevensInHands(deck))
+    {
+      std::cout << "Running through draw #" << count << "." << std::endl;
+      draw(player, allHands, deck);
+      ++player;
+      ++count;
+      // first run through, player and count increment to 2.
+      if (player == playerCount + 1)
+      {
+        player = 1;
+      }
+    }
+    std::cout << "Eleven found." << std::endl;
+  }
+
+  std::cout << "Size of deck after drawing: " << deck.size() << std::endl;
+  for (size_t player = 1; player <= allHands.size(); ++player)
+  {
+    std::cout << "This is player " << player << "'s new hand: " << std::endl;
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    {
+      std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+    }
+  }
+}
+
+void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
+{
+
 }
 
 int getPlayer(std::vector<Cards>& allHands, int number, char color)
@@ -195,26 +220,26 @@ int getPlayer(std::vector<Cards>& allHands, int number, char color)
 
   return player;
 }
-
-Cards::iterator positionOfEleven(Cards& hand)
+/*
+Cards::iterator getPositionOfEleven(std::vector<Cards>& allHands, int player)
 {
-  auto position = std::find_if(hand.begin(), hand.end(), [](Card& card){ return card.getNumber() == 11; });
+  auto position = std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [](Card& card){ return card.getNumber() == 11; });
 
   return position;
-}
+}*/
 
-Cards::iterator positionOfCard(std::vector<Cards>& allHands, int player, int number, char color)
+Cards::iterator getPositionOfCard(std::vector<Cards>& allHands, int player, int number, char color)
 {
   auto position = std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
 
   return position;
 }
 
-void playRedEleven(Cards::iterator position, Cards& hand, std::vector<Cards>& tableDecks)
+void playRedEleven(Cards::iterator position, std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
 {
-  auto index = std::distance(hand.begin(), position);
-  auto redEleven = hand[index];
-  hand.erase(position);
+  auto index = std::distance(allHands[player - 1].begin(), position);
+  auto redEleven = allHands[player - 1][index];
+  allHands[player - 1].erase(position);
   tableDecks[1].push_back(redEleven);
 }
 
@@ -284,6 +309,13 @@ void playCard(Cards::iterator position, std::vector<Cards>& allHands, std::vecto
       tableDecks[10].push_back(cardToBePlayed);
     }
   }
+}
+
+void draw(int player, std::vector<Cards>& allHands, Cards& deck)
+{
+  auto singleCard = deck.back();
+  deck.pop_back();
+  allHands[player - 1].push_back(singleCard);
 }
 
 bool cardIsRed(Card& card)
