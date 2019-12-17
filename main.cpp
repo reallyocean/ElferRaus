@@ -21,7 +21,8 @@ bool elevenInHand(std::vector<Cards>&);
 void firstMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int);
 void secondMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int);
 int getPlayer(std::vector<Cards>&, int, char);
-Cards::iterator getPositionOfEleven(Cards&);
+int getPlayerByCardNumber(std::vector<Cards>&, int);
+Cards::iterator getPositionOfCardByNumber(std::vector<Cards>&, int, int);
 Cards::iterator getPositionOfCard(std::vector<Cards>&, int, int, char);
 void playRedEleven(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
 void playCard(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
@@ -46,7 +47,7 @@ int main()
   std::vector<Cards> tableDecks(12);
   std::cout << "Size of deck after dealing: " << deck.size() << std::endl;
   displayAllHands(allHands);
-  // After 
+
   firstMove(allHands, deck, tableDecks, playerCount);
 
   return 0;
@@ -137,6 +138,10 @@ bool redElevenInHands(std::vector<Cards>& allHands)
   return false;
 }
 
+// If eleven in hands, search for a red eleven.
+// If red eleven is found, play it and leave first move function.
+// else, Play eleven from random player.
+// else no eleven is found, draw until you get one and play it.
 void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
 {
   if (elevensInHands(deck))
@@ -156,6 +161,9 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     else
     {
       std::cout << "Eleven in the hand but it's not red." << std::endl;
+      auto player = getPlayerByCardNumber(allHands, 11);
+      auto position = getPositionOfCardByNumber(allHands, player, 11);
+      playCard(position, allHands, tableDecks, player);
     }
   }
   else
@@ -195,7 +203,49 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
 
 void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
 {
-
+  /*
+  do while deck.size() != 0
+  If player can play, play card.
+  else draw card.
+    if player can play, play card
+    else draw card
+      if player can play, play card
+      else draw card
+        if player can play, play card.
+  else ++player
+  */
+  while (deck.size() != 0)
+  {
+    if (canPlay())
+    {
+      playCard(position, allHands, tableDecks, player);
+    }
+    else
+    {
+      draw(player, allHands, deck);
+      if (canPlay())
+      {
+        playCard(position, allHands, tableDecks, player);
+      }
+      else
+      {
+        draw(player, allHands, deck);
+        if (canPlay())
+        {
+          playCard(position, allHands, tableDecks, player);
+        }
+        else
+        {
+          draw(player, allHands, deck);
+          if (canPlay())
+          {
+            playCard(position, allHands, tableDecks, player);
+          }
+        }
+      }
+    }
+    ++player;
+  }
 }
 
 int getPlayer(std::vector<Cards>& allHands, int number, char color)
@@ -215,13 +265,31 @@ int getPlayer(std::vector<Cards>& allHands, int number, char color)
 
   return player;
 }
-/*
-Cards::iterator getPositionOfEleven(std::vector<Cards>& allHands, int player)
+
+int getPlayerByCardNumber(std::vector<Cards>& allHands, int number)
 {
-  auto position = std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [](Card& card){ return card.getNumber() == 11; });
+  int player{0};
+
+  for (size_t i = 0; i < allHands.size(); ++i)
+  {
+    for (auto it = allHands[i].begin(); it != allHands[i].end(); ++it)
+    {
+      if (it->getNumber() == number)
+      {
+        player = i + 1;
+      }
+    }
+  }
+
+  return player;
+}
+
+Cards::iterator getPositionOfCardByNumber(std::vector<Cards>& allHands, int player, int number)
+{
+  auto position = std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return card.getNumber() == number; });
 
   return position;
-}*/
+}
 
 Cards::iterator getPositionOfCard(std::vector<Cards>& allHands, int player, int number, char color)
 {
@@ -240,9 +308,9 @@ void playRedEleven(Cards::iterator position, std::vector<Cards>& allHands, std::
 
 void playCard(Cards::iterator position, std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
 {
-  auto index = std::distance(allHands[0].begin(), position);
-  auto cardToBePlayed = allHands[0][index];
-  allHands[0].erase(position);
+  auto index = std::distance(allHands[player - 1].begin(), position);
+  auto cardToBePlayed = allHands[player - 1][index];
+  allHands[player - 1].erase(position);
 
   if (cardIsRed(cardToBePlayed))
   {
