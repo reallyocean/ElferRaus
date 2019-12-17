@@ -34,6 +34,7 @@ bool cardIsLow(Card&);
 bool cardIsEleven(Card&);
 bool cardIsHigh(Card&);
 void draw(int, std::vector<Cards>&, Cards&);
+std::vector<int> shuffleTableIndexVector();
 
 int main()
 {
@@ -255,10 +256,23 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
 bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
 {
   /*
-  Go through table
+  Go through table.
+  0, 2, 3, 5, 6, 8, 9, 11
+  if table deck element size() < 10
   */
+  auto randomIndex = shuffleTableIndexVector();
 
   return false;
+}
+
+std::vector<int> shuffleTableIndexVector()
+{
+  std::vector<int> randomIndex = {0, 2, 3, 5, 6, 8, 9, 11};
+  unsigned seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  std::default_random_engine e(seed);
+  std::shuffle(randomIndex.begin(), randomIndex.end(), e);
+
+  return randomIndex;
 }
 
 int getPlayer(std::vector<Cards>& allHands, int number, char color)
