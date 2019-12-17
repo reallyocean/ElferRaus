@@ -216,7 +216,7 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
   */
   while (deck.size() != 0)
   {
-    if (canPlay())
+    if (canPlay(allHands, tableDecks, player))
     {
       playCard(position, allHands, tableDecks, player);
     }
@@ -245,7 +245,20 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
       }
     }
     ++player;
+    if (player == playerCount + 1)
+    {
+      player = 1;
+    }
   }
+}
+
+bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
+{
+  /*
+  Go through table
+  */
+
+  return false;
 }
 
 int getPlayer(std::vector<Cards>& allHands, int number, char color)
