@@ -35,6 +35,7 @@ bool cardIsEleven(Card&);
 bool cardIsHigh(Card&);
 void draw(int, std::vector<Cards>&, Cards&);
 std::vector<int> shuffleTableIndexVector();
+bool hasEleven(std::vector<Cards>&, int);
 
 int main()
 {
@@ -139,6 +140,19 @@ bool redElevenInHands(std::vector<Cards>& allHands)
   return false;
 }
 
+bool hasEleven(std::vector<Cards>& allHands, int player)
+{
+  for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+  {
+    if (it->getNumber() == 11)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // If eleven in hands, search for a red eleven.
 // If red eleven is found, play it and leave first move function.
 // else, Play eleven from random player.
@@ -190,7 +204,7 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     }
     std::cout << "Eleven found." << std::endl;
   }
-
+  /*
   std::cout << "Size of deck after drawing: " << deck.size() << std::endl;
   for (size_t player = 1; player <= allHands.size(); ++player)
   {
@@ -199,7 +213,7 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     {
       std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
     }
-  }
+  }*/
 }
 
 void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
@@ -215,11 +229,22 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
         if player can play, play card.
   else ++player
   */
+  int player{1};
+
   while (deck.size() != 0)
   {
     if (canPlay(allHands, tableDecks, player))
     {
-      playCard(position, allHands, tableDecks, player);
+      if (hasEleven(allHands, player))
+      {
+        auto position = getPositionOfCardByNumber(allHands, player, 11);
+        playCard(position, allHands, tableDecks, player);
+      }
+      else
+      {
+        //auto position = getPositionOfCard();
+        playCard(position, allHands, tableDecks, player);
+      }
     }
     else
     {
@@ -258,9 +283,162 @@ bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int p
   /*
   Go through table.
   0, 2, 3, 5, 6, 8, 9, 11
-  if table deck element size() < 10
+  if table deck element
   */
-  auto randomIndex = shuffleTableIndexVector();
+
+  for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+  {
+    if (it->getNumber() == 11)
+    {
+      return true;
+    }
+  }
+
+  std::vector<int> randomIndex = {0, 2, 3, 5, 6, 8, 9, 11};
+  for (int i = 0; i < randomIndex.size(); ++i)
+  {
+    if ((randomIndex[i] % 3 == 0) && (tableDecks[randomIndex[i]].size() < 11)) // if there are free spots on the low decks
+    {
+      if (tableDecks[randomIndex[i]].size() != 0)
+      {
+        // if the number in hand is equal to the last number of the table deck + 1, return true;
+        if (i == 0) // R
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'R'))
+            {
+              return true;
+            }
+          }
+        }
+        else if (i == 2) // G
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'G'))
+            {
+              return true;
+            }
+          }
+        }
+        else if (i == 4) // B
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'B'))
+            {
+              return true;
+            }
+          }
+        }
+        else // Y
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'Y'))
+            {
+              return true;
+            }
+          }
+        }
+      }
+      else
+      {
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          // if the number of the card in hand is equal to the top of the deck - 1
+          if (it->getNumber() == 10)
+          {
+            return true;
+          }
+        }
+      }
+    }
+    else if (tableDecks[randomIndex[i]].size() < 10) // if there are free spots on the high decks
+    {
+      // if the number in hand is equal to the last number of the table deck - 1, return true;
+      if (tableDecks[randomIndex[i]].size() != 0)
+      {
+        // if the number in hand is equal to the last number of the table deck + 1, return true;
+        if (i == 1) // R
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'R'))
+            {
+              return true;
+            }
+          }
+        }
+        else if (i == 3) // G
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'G'))
+            {
+              return true;
+            }
+          }
+        }
+        else if (i == 5) // B
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'B'))
+            {
+              return true;
+            }
+          }
+        }
+        else // Y
+        {
+          // if the color of the table deck is red
+          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'Y'))
+            {
+              return true;
+            }
+          }
+        }
+      }
+      else
+      {
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          // if the number of the card in hand is equal to the top of the deck - 1
+          if (it->getNumber() == 12)
+          {
+            return true;
+          }
+        }
+      }
+    }
+  }
 
   return false;
 }
