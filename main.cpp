@@ -26,6 +26,8 @@ int getPlayerByCardNumber(std::vector<Cards>&, int);
 Cards::iterator getPositionOfCardByNumber(std::vector<Cards>&, int, int);
 Cards::iterator getPositionOfCard(std::vector<Cards>&, int, int, char);
 Cards::iterator getPositionOfPlayableCard(std::vector<Cards>&, std::vector<Cards>&, int);
+Cards::iterator lowCardPosition(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>& );
+Cards::iterator highCardPosition(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>& );
 void playRedEleven(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
 void playCard(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
 bool cardIsRed(Card&);
@@ -39,7 +41,8 @@ void draw(int, std::vector<Cards>&, Cards&);
 void shuffleVector(std::vector<int>&);
 bool hasEleven(std::vector<Cards>&, int);
 char tableIndexToChar(int);
-bool cardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, int);
+bool lowCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
+bool highCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
 
 int main()
 {
@@ -157,6 +160,22 @@ bool hasEleven(std::vector<Cards>& allHands, int player)
   return false;
 }
 
+Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
+{
+  auto number = tableDecks[indexVector[i]].back().getNumber() - 1;
+  auto color = tableIndexToChar(i);
+
+  return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
+}
+
+Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
+{
+  auto number = tableDecks[indexVector[i]].back().getNumber() + 1;
+  auto color = tableIndexToChar(i);
+
+  return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
+}
+
 // If eleven in hands, search for a red eleven.
 // If red eleven is found, play it and leave first move function.
 // else, Play eleven from random player.
@@ -222,172 +241,75 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
 
 Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
 {
-  //auto position = std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
-
+  Cards::iterator position;
   // Look through all table decks and compare the top cards with the players' hands' cards.
   // if they match, return position iterator.
+  std::vector<int> randomIndex = {0, 2, 3, 5, 6, 8, 9, 11};
+  shuffleVector(randomIndex);
 
-  // randomly choose top of bottom deck to search first.
-  int random = rand() % 2;
-  // randomly search the top decks
-  std::vector<int> randomHighIndex = {2, 5, 8, 11};
-  shuffleVector(randomHighIndex);
-  // randomly search the bottom decks.
-  std::vector<int> randomLowIndex = {0, 3, 6, 9};
-  shuffleVector(randomLowIndex);
-
-
-
-  if (random == 1)
-
-  for (int i = 0; i < randomHighIndex.size(); ++i)
+  for (int i = 0; i < randomIndex.size(); ++i)
   {
-    if ((randomIndex[i] % 3 == 0) && (tableDecks[randomIndex[i]].size() < 11)) // if there are free spots on the low decks
+    if (i == 0) // if the color of the table deck is red
     {
-      if (tableDecks[randomIndex[i]].size() != 0)
+      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
-        // if the number in hand is equal to the last number of the table deck + 1, return true;
-        if (i == 0) // R
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'R'))
-            {
-              return true;
-            }
-          }
-        }
-        else if (i == 2) // G
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'G'))
-            {
-              return true;
-            }
-          }
-        }
-        else if (i == 4) // B
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'B'))
-            {
-              return true;
-            }
-          }
-        }
-        else // Y
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'Y'))
-            {
-              return true;
-            }
-          }
-        }
-      }
-      else
-      {
-        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-        {
-          // if the number of the card in hand is equal to the top of the deck - 1
-          if (it->getNumber() == 10)
-          {
-            return true;
-          }
-        }
+        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
       }
     }
-    else if (tableDecks[randomIndex[i]].size() < 10) // if there are free spots on the high decks
+    else if (i == 2) // if the color of the table deck is green
     {
-      // if the number in hand is equal to the last number of the table deck - 1, return true;
-      if (tableDecks[randomIndex[i]].size() != 0)
+      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
-        // if the number in hand is equal to the last number of the table deck + 1, return true;
-        if (i == 1) // R
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'R'))
-            {
-              return true;
-            }
-          }
-        }
-        else if (i == 3) // G
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'G'))
-            {
-              return true;
-            }
-          }
-        }
-        else if (i == 5) // B
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'B'))
-            {
-              return true;
-            }
-          }
-        }
-        else // Y
-        {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-          {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'Y'))
-            {
-              return true;
-            }
-          }
-        }
+        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
       }
-      else
+    }
+    else if (i == 4) // if the color of the table deck is blue
+    {
+      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
-        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
-        {
-          // if the number of the card in hand is equal to the top of the deck - 1
-          if (it->getNumber() == 12)
-          {
-            return true;
-          }
-        }
+        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+      }
+    }
+    else if (i == 6) // if the color of the table deck is yellow
+    {
+      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+      }
+    }
+    else if (i == 1) // if the color of the table deck is red
+    {
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+      }
+    }
+    else if (i == 3) // if the color of the table deck is green
+    {
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+      }
+    }
+    else if (i == 5) // if the color of the table deck is blue
+    {
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+      }
+    }
+    else if (i == 7) // if the color of the table deck is yellow
+    {
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
       }
     }
   }
 
   return position;
 }
-
+/*
 void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
 {
   /*
@@ -400,7 +322,7 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
       else draw card
         if player can play, play card.
   else ++player
-  */
+  *//*
   int player{1};
 
   while (deck.size() != 0)
@@ -414,7 +336,7 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
       }
       else
       {
-        //auto position = getPositionOfCard();
+        auto position = getPositionOfPlayableCard();
         playCard(position, allHands, tableDecks, player);
       }
     }
@@ -449,8 +371,8 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
     }
   }
 }
-
-bool cardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, int indexVector)
+*/
+bool lowCardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
 {
   auto topTableCardNumber = tableDecks[indexVector[i]].back().getNumber();
   auto color = tableIndexToChar(i);
@@ -458,6 +380,22 @@ bool cardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, i
   {
     // if the number of the card in hand is equal to the top of the deck - 1
     if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == color))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool highCardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
+{
+  auto topTableCardNumber = tableDecks[indexVector[i]].back().getNumber();
+  auto color = tableIndexToChar(i);
+  for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+  {
+    // if the number of the card in hand is equal to the top of the deck - 1
+    if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == color))
     {
       return true;
     }
@@ -517,48 +455,33 @@ bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int p
         if (i == 0) // R
         {
           // if the color of the table deck is red
-          if (cardMatches(allHands, tableDecks, player, i, randomIndex))
+          if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
             return true;
           }
         }
         else if (i == 2) // G
         {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          // if the color of the table deck is green
+          if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'G'))
-            {
-              return true;
-            }
+            return true;
           }
         }
         else if (i == 4) // B
         {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          // if the color of the table deck is blue
+          if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'B'))
-            {
-              return true;
-            }
+            return true;
           }
         }
         else // Y
         {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          // if the color of the table deck is yellow
+          if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == 'Y'))
-            {
-              return true;
-            }
+            return true;
           }
         }
       }
@@ -583,53 +506,33 @@ bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int p
         if (i == 1) // R
         {
           // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'R'))
-            {
-              return true;
-            }
+            return true;
           }
         }
         else if (i == 3) // G
         {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          // if the color of the table deck is green
+          if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'G'))
-            {
-              return true;
-            }
+            return true;
           }
         }
         else if (i == 5) // B
         {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          // if the color of the table deck is blue
+          if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'B'))
-            {
-              return true;
-            }
+            return true;
           }
         }
         else // Y
         {
-          // if the color of the table deck is red
-          auto topTableCardNumber = tableDecks[randomIndex[i]].back().getNumber();
-          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          // if the color of the table deck is yellow
+          if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
           {
-            // if the number of the card in hand is equal to the top of the deck - 1
-            if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == 'Y'))
-            {
-              return true;
-            }
+            return true;
           }
         }
       }
@@ -654,7 +557,7 @@ void shuffleVector(std::vector<int>& v)
 {
   unsigned seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   std::default_random_engine e(seed);
-  std::shuffle(randomIndex.begin(), randomIndex.end(), e);
+  std::shuffle(v.begin(), v.end(), e);
 }
 
 int getPlayer(std::vector<Cards>& allHands, int number, char color)
