@@ -43,6 +43,8 @@ bool hasEleven(std::vector<Cards>&, int);
 char tableIndexToChar(int);
 bool lowCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
 bool highCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
+bool canPlay(std::vector<Cards>&, std::vector<Cards>&, int);
+void displayBoard(std::vector<Cards>&);
 
 int main()
 {
@@ -54,10 +56,12 @@ int main()
   auto playerCount = getPlayerCount();
   auto allHands = deal(playerCount, deck);
   std::vector<Cards> tableDecks(12);
+  displayBoard(tableDecks);
   std::cout << "Size of deck after dealing: " << deck.size() << std::endl;
   displayAllHands(allHands);
 
   firstMove(allHands, deck, tableDecks, playerCount);
+  secondMove(allHands, deck, tableDecks, playerCount);
 
   return 0;
 }
@@ -99,6 +103,21 @@ void shuffleDeck(Cards& deck)
   unsigned seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   std::default_random_engine e(seed);
   std::shuffle(deck.begin(), deck.end(), e);
+}
+
+void displayBoard(std::vector<Cards>& tableDecks)
+{
+  for (size_t i = 0; i < tableDecks.size(); ++i)
+  {
+    std::cout << "Table deck size #" << i  << ": " << tableDecks[i].size() << std::endl;
+    if (tableDecks[i].size() != 0)
+    {
+      for (auto it = tableDecks[i].begin(); it != tableDecks[i].end(); ++it)
+      {
+        std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+      }
+    }
+  }
 }
 
 void displayAllHands(std::vector<Cards>& allHands)
@@ -160,22 +179,6 @@ bool hasEleven(std::vector<Cards>& allHands, int player)
   return false;
 }
 
-Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
-{
-  auto number = tableDecks[indexVector[i]].back().getNumber() - 1;
-  auto color = tableIndexToChar(i);
-
-  return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
-}
-
-Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
-{
-  auto number = tableDecks[indexVector[i]].back().getNumber() + 1;
-  auto color = tableIndexToChar(i);
-
-  return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
-}
-
 // If eleven in hands, search for a red eleven.
 // If red eleven is found, play it and leave first move function.
 // else, Play eleven from random player.
@@ -227,7 +230,7 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     }
     std::cout << "Eleven found." << std::endl;
   }
-  /*
+
   std::cout << "Size of deck after drawing: " << deck.size() << std::endl;
   for (size_t player = 1; player <= allHands.size(); ++player)
   {
@@ -236,7 +239,39 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     {
       std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
     }
-  }*/
+  }
+  displayBoard(tableDecks);
+}
+
+/*
+
+Cards::iterator getPositionOfCard(std::vector<Cards>& allHands, int player, int number, char color)
+{
+  auto position = std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
+
+  return position;
+}
+
+*/
+
+Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
+{
+  auto numberToBeFoundInDeck = tableDecks[indexVector[i]].back().getNumber() - 1;
+  std::cout << "number has been declared." << std::endl;
+  auto color = tableIndexToChar(i);
+  std::cout << "color has been declared." << std::endl;
+
+  return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
+}
+
+Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
+{
+  auto numberToBeFoundInDeck = tableDecks[indexVector[i]].back().getNumber() + 1;
+  std::cout << "number has been declared." << std::endl;
+  auto color = tableIndexToChar(i);
+  std::cout << "color has been declared." << std::endl;
+
+  return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
 }
 
 Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
@@ -244,134 +279,385 @@ Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vec
   Cards::iterator position;
   // Look through all table decks and compare the top cards with the players' hands' cards.
   // if they match, return position iterator.
-  std::vector<int> randomIndex = {0, 2, 3, 5, 6, 8, 9, 11};
+  std::vector<int> randomIndex = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
   shuffleVector(randomIndex);
-
+  std::cout << "declared variables and shuffled vector." << std::endl;
+  std::cout << "Shuffled vector: " << std::endl;
+  for (auto it = randomIndex.begin(); it != randomIndex.end(); ++it)
+  {
+    std::cout << *it << " ";
+  }
+  std::cout << std::endl;
   for (int i = 0; i < randomIndex.size(); ++i)
   {
-    if (i == 0) // if the color of the table deck is red
+    if (randomIndex[i] == 0) // low red deck
     {
+      std::cout << "index is 0" << std::endl;
       if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
+        std::cout << "index is 0 and lowCardMatches is true." << std::endl;
         position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
       }
+      std::cout << "index is 0 but lCM isn't true." << std::endl;
     }
-    else if (i == 2) // if the color of the table deck is green
+    else if (randomIndex[i] == 1) // red eleven deck
     {
+      std::cout << "index is 1" << std::endl;
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        std::cout << "index is 1 and highCardMatches is true." << std::endl;
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
+      }
+      std::cout << "index is 1 but hCM isn't true." << std::endl;
+    }
+    else if (randomIndex[i] == 2) // high red deck
+    {
+      std::cout << "index is 2" << std::endl;
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        std::cout << "index is 2 and highCardMatches is true." << std::endl;
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
+      }
+      std::cout << "index is 2 but hCM isn't true." << std::endl;
+    }
+    else if (randomIndex[i] == 3) // low green deck
+    {
+      std::cout << "index is 3" << std::endl;
       if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
+        std::cout << "index is 3 and lowCardMatches is true." << std::endl;
         position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
       }
+      std::cout << "index is 2 but lCM isn't true." << std::endl;
     }
-    else if (i == 4) // if the color of the table deck is blue
+    else if (randomIndex[i] == 4) // Green eleven deck
     {
+      std::cout << "index is 4" << std::endl;
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        std::cout << "index is 4 and highCardMatches is true." << std::endl;
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
+      }
+      std::cout << "index is 4 but hCM isn't true." << std::endl;
+    }
+    else if (randomIndex[i] == 5) // high green deck
+    {
+      std::cout << "index is 5" << std::endl;
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        std::cout << "index is 5 and highCardMatches is true." << std::endl;
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
+      }
+      std::cout << "index is 5 but hCM isn't true." << std::endl;
+    }
+    else if (randomIndex[i] == 6) // low blue deck
+    {
+      std::cout << "index is 6" << std::endl;
       if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
+        std::cout << "index is 6 and lowCardMatches is true." << std::endl;
         position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
       }
+      std::cout << "index is 6 but lCM isn't true." << std::endl;
     }
-    else if (i == 6) // if the color of the table deck is yellow
+    else if (randomIndex[i] == 7) // blue eleven deck
     {
+      std::cout << "index is 7" << std::endl;
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        std::cout << "index is 7 and highCardMatches is true." << std::endl;
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
+      }
+      std::cout << "index is 7 but hCM isn't true." << std::endl;
+    }
+    else if (randomIndex[i] == 8) // high blue deck
+    {
+      std::cout << "index is 8" << std::endl;
+      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      {
+        std::cout << "index is 8 and highCardMatches is true." << std::endl;
+        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
+      }
+      std::cout << "index is 8 but hCM isn't true." << std::endl;
+    }
+    else if (randomIndex[i] == 9) // low yellow deck
+    {
+      std::cout << "index is 9" << std::endl;
       if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
+        std::cout << "index is 9 and lowCardMatches is true." << std::endl;
         position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
       }
+      std::cout << "index is 9 but lCM isn't true." << std::endl;
     }
-    else if (i == 1) // if the color of the table deck is red
+    else if (randomIndex[i] == 10) // yellow eleven deck
     {
+      std::cout << "index is 10" << std::endl;
       if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
+        std::cout << "index is 10 and highCardMatches is true." << std::endl;
         position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
       }
+      std::cout << "index is 10 but hCM isn't true." << std::endl;
     }
-    else if (i == 3) // if the color of the table deck is green
+    else if (randomIndex[i] == 11) // high eleven deck
     {
+      std::cout << "index is 11" << std::endl;
       if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
       {
+        std::cout << "index is 11 and highCardMatches is true." << std::endl;
         position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+        std::cout << "position has been assigned." << std::endl;
       }
+      std::cout << "index is 11 but hCM isn't true." << std::endl;
     }
-    else if (i == 5) // if the color of the table deck is blue
-    {
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
-      {
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-      }
-    }
-    else if (i == 7) // if the color of the table deck is yellow
-    {
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
-      {
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-      }
-    }
+    std::cout << "index isn't 0-11" << std::endl;
   }
 
   return position;
 }
-/*
+
 void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
 {
-  /*
-  do while deck.size() != 0
-  If player can play, play card.
-  else draw card.
-    if player can play, play card
-    else draw card
-      if player can play, play card
-      else draw card
-        if player can play, play card.
-  else ++player
-  *//*
   int player{1};
-
+  std::cout << "Starting with player 1." << std::endl;
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  std::cin.ignore();
   while (deck.size() != 0)
   {
+    std::cout << "Board:" << std::endl;
+    displayBoard(tableDecks);
+    std::cout << "Player " << player << " is going." << std::endl;
+    std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    {
+      std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
     if (canPlay(allHands, tableDecks, player))
     {
+      std::cout << "Player " << player << " can currently play." << std::endl;
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
       if (hasEleven(allHands, player))
       {
+        std::cout << "Player " << player << " already has an eleven. Playing it." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
         auto position = getPositionOfCardByNumber(allHands, player, 11);
+        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
+        std::cout << "Player " << player << " has played an eleven." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cout << "New board:" << std::endl;
+        displayBoard(tableDecks);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
       }
       else
       {
-        auto position = getPositionOfPlayableCard();
+        std::cout << "Player " << player << " doesn't already have an eleven but can play. Playing card." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
+        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
+        std::cout << "Player " << player << " has played a card." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cout << "New board:" << std::endl;
+        displayBoard(tableDecks);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
       }
     }
     else
     {
-      draw(player, allHands, deck);
-      if (canPlay())
+      std::cout << "Player " << player << " can't play so they must draw their first card." << std::endl;
+      std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+      for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
       {
+        std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+      }
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
+      draw(player, allHands, deck);
+      std::cout << "Player " << player << " has drawn their first card." << std::endl;
+      std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+      for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+      {
+        std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+      }
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
+      if (canPlay(allHands, tableDecks, player))
+      {
+        std::cout << "Player " << player << " can now play. Playing card." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
+        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
+        std::cout << "Player " << player << " played a card." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cout << "New board:" << std::endl;
+        displayBoard(tableDecks);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
       }
       else
       {
-        draw(player, allHands, deck);
-        if (canPlay())
+        std::cout << "Player " << player << " can't play so they must draw their second card." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
         {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        draw(player, allHands, deck);
+        std::cout << "Player " << player << " has drawn their second card." << std::endl;
+        std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        if (canPlay(allHands, tableDecks, player))
+        {
+          std::cout << "Player " << player << " can now play. Playing card." << std::endl;
+          std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+          }
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+          auto position = getPositionOfPlayableCard(allHands, tableDecks, player); // player is 2, allHands is that, tableDecks has one green 11.
+          std::cout << "Position found." << std::endl;
           playCard(position, allHands, tableDecks, player);
+          std::cout << "Player " << player << " played a card." << std::endl;
+          std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+          }
+          std::cout << "New board:" << std::endl;
+          displayBoard(tableDecks);
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
         }
         else
         {
-          draw(player, allHands, deck);
-          if (canPlay())
+          std::cout << "Player " << player << " can't play so they must draw a final time." << std::endl;
+          std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
           {
-            playCard(position, allHands, tableDecks, player);
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
           }
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+          draw(player, allHands, deck);
+          std::cout << "Player " << player << " has drawn their final card." << std::endl;
+          std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+          }
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+          if (canPlay(allHands, tableDecks, player))
+          {
+            std::cout << "Player " << player << " can now play. Playing card." << std::endl;
+            std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+            for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+            {
+              std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+            }
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin.ignore();
+            auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
+            std::cout << "Position found." << std::endl;
+            playCard(position, allHands, tableDecks, player);
+            std::cout << "Player " << player << " played a card." << std::endl;
+            std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+            for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+            {
+              std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+            }
+            std::cout << "New board:" << std::endl;
+            displayBoard(tableDecks);
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin.ignore();
+          }
+          std::cout << "Player " << player << " can't play after their final draw so it's now player " << player + 1 << "'s turn." << std::endl;
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
         }
       }
     }
+    std::cout << "Player " << player << " is being incremented." << std::endl;
+    std::cout << "But first, the deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    {
+      std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
     ++player;
     if (player == playerCount + 1)
     {
+      std::cout << "Player " << player << " is being reset to 1." << std::endl;
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
       player = 1;
     }
+    std::cout << "End of while loop. Resetting." << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
   }
+  std::cout << "Deck is empty." << std::endl;
 }
-*/
+
 bool lowCardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
 {
   auto topTableCardNumber = tableDecks[indexVector[i]].back().getNumber();
@@ -430,11 +716,7 @@ char tableIndexToChar(int i)
 
 bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
 {
-  /*
-  Go through table.
-  0, 2, 3, 5, 6, 8, 9, 11
-  if table deck element
-  */
+  // run through, player = 1.
 
   for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
   {
@@ -487,12 +769,51 @@ bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int p
       }
       else
       {
-        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        auto color = tableIndexToChar(i);
+        // at this point, the bottom red deck is empty.
+        // if the deck we're checking is a red deck and the red eleven deck is full.
+        if ((color == 'R') && (tableDecks[1].size() != 0)) // red
         {
-          // if the number of the card in hand is equal to the top of the deck - 1
-          if (it->getNumber() == 10)
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
           {
-            return true;
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 10) && (it->getColor() == color))
+            {
+              return true;
+            }
+          }
+        }
+        else if ((color == 'G') && (tableDecks[4].size() != 0)) // green
+        {
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 10) && (it->getColor() == color))
+            {
+              return true;
+            }
+          }
+        }
+        else if ((color == 'B') && (tableDecks[7].size() != 0)) // blue
+        {
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 10) && (it->getColor() == color))
+            {
+              return true;
+            }
+          }
+        }
+        else if ((color == 'Y') && (tableDecks[10].size() != 0))// yellow
+        {
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 10) && (it->getColor() == color))
+            {
+              return true;
+            }
           }
         }
       }
@@ -538,12 +859,51 @@ bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int p
       }
       else
       {
-        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        auto color = tableIndexToChar(i);
+        // at this point, the top red deck is empty.
+        // if the deck we're checking is a red deck and the red eleven deck is full.
+        if ((color == 'R') && (tableDecks[1].size() != 0)) // red
         {
-          // if the number of the card in hand is equal to the top of the deck - 1
-          if (it->getNumber() == 12)
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
           {
-            return true;
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 12) && (it->getColor() == color))
+            {
+              return true;
+            }
+          }
+        }
+        else if ((color == 'G') && (tableDecks[4].size() != 0)) // green
+        {
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 12) && (it->getColor() == color))
+            {
+              return true;
+            }
+          }
+        }
+        else if ((color == 'B') && (tableDecks[7].size() != 0)) // blue
+        {
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 12) && (it->getColor() == color))
+            {
+              return true;
+            }
+          }
+        }
+        else if ((color == 'Y') && (tableDecks[10].size() != 0))// yellow
+        {
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            // if the number of the card in hand is equal to the top of the deck - 1
+            if ((it->getNumber() == 12) && (it->getColor() == color))
+            {
+              return true;
+            }
           }
         }
       }
