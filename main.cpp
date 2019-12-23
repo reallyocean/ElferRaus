@@ -26,8 +26,8 @@ int getPlayerByCardNumber(std::vector<Cards>&, int);
 Cards::iterator getPositionOfCardByNumber(std::vector<Cards>&, int, int);
 Cards::iterator getPositionOfCard(std::vector<Cards>&, int, int, char);
 Cards::iterator getPositionOfPlayableCard(std::vector<Cards>&, std::vector<Cards>&, int);
-Cards::iterator lowCardPosition(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>& );
-Cards::iterator highCardPosition(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>& );
+Cards::iterator lowCardPosition(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
+Cards::iterator highCardPosition(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
 void playRedEleven(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
 void playCard(Cards::iterator, std::vector<Cards>&, std::vector<Cards>&, int);
 bool cardIsRed(Card&);
@@ -40,7 +40,7 @@ bool cardIsHigh(Card&);
 void draw(int, std::vector<Cards>&, Cards&);
 void shuffleVector(std::vector<int>&);
 bool hasEleven(std::vector<Cards>&, int);
-char tableIndexToChar(int);
+char tableIndexToChar(int, std::vector<int>&);
 bool lowCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
 bool highCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
 bool canPlay(std::vector<Cards>&, std::vector<Cards>&, int);
@@ -254,21 +254,21 @@ Cards::iterator getPositionOfCard(std::vector<Cards>& allHands, int player, int 
 
 */
 
-Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
+Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& randomIndex)
 {
-  auto numberToBeFoundInDeck = tableDecks[indexVector[i]].back().getNumber() - 1;
+  auto numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() - 1;
   std::cout << "number has been declared." << std::endl;
-  auto color = tableIndexToChar(i);
+  auto color = tableIndexToChar(i, randomIndex);
   std::cout << "color has been declared." << std::endl;
 
   return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
 }
 
-Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
+Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& randomIndex)
 {
-  auto numberToBeFoundInDeck = tableDecks[indexVector[i]].back().getNumber() + 1;
+  auto numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() + 1;
   std::cout << "number has been declared." << std::endl;
-  auto color = tableIndexToChar(i);
+  auto color = tableIndexToChar(i, randomIndex);
   std::cout << "color has been declared." << std::endl;
 
   return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
@@ -276,10 +276,11 @@ Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards
 
 Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player)
 {
+  // player = 4, and decks.
   Cards::iterator position;
   // Look through all table decks and compare the top cards with the players' hands' cards.
   // if they match, return position iterator.
-  std::vector<int> randomIndex = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+  std::vector<int> randomIndex = {0, 2, 3, 5, 6, 8, 9, 11};
   shuffleVector(randomIndex);
   std::cout << "declared variables and shuffled vector." << std::endl;
   std::cout << "Shuffled vector: " << std::endl;
@@ -288,139 +289,116 @@ Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vec
     std::cout << *it << " ";
   }
   std::cout << std::endl;
-  for (int i = 0; i < randomIndex.size(); ++i)
+  std::cout << "Testing first if playable card is an eleven." << std::endl;
+
+  if (hasEleven(allHands, player))
   {
-    if (randomIndex[i] == 0) // low red deck
+    std::cout << "Player " << player << " already has an eleven. Playing it." << std::endl;
+    std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
     {
-      std::cout << "index is 0" << std::endl;
-      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
-      {
-        std::cout << "index is 0 and lowCardMatches is true." << std::endl;
-        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
-      }
-      std::cout << "index is 0 but lCM isn't true." << std::endl;
+      std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
     }
-    else if (randomIndex[i] == 1) // red eleven deck
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
+    position = getPositionOfCardByNumber(allHands, player, 11);
+    std::cout << "Position found." << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
+  }
+  else
+  {
+    std::cout << "Playable card is not an eleven." << std::endl;
+    for (int i = 0; i < randomIndex.size(); ++i)
     {
-      std::cout << "index is 1" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      if (randomIndex[i] == 0) // low red deck
       {
-        std::cout << "index is 1 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 0" << std::endl;
+        if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 0 and lowCardMatches is true." << std::endl;
+          position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 0 but lCM isn't true." << std::endl;
       }
-      std::cout << "index is 1 but hCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 2) // high red deck
-    {
-      std::cout << "index is 2" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      else if (randomIndex[i] == 2) // high red deck
       {
-        std::cout << "index is 2 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 2" << std::endl;
+        if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 2 and highCardMatches is true." << std::endl;
+          position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 2 but hCM isn't true." << std::endl;
       }
-      std::cout << "index is 2 but hCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 3) // low green deck
-    {
-      std::cout << "index is 3" << std::endl;
-      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
+      else if (randomIndex[i] == 3) // low green deck
       {
-        std::cout << "index is 3 and lowCardMatches is true." << std::endl;
-        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 3" << std::endl;
+        if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 3 and lowCardMatches is true." << std::endl;
+          position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 3 but lCM isn't true." << std::endl;
       }
-      std::cout << "index is 2 but lCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 4) // Green eleven deck
-    {
-      std::cout << "index is 4" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      else if (randomIndex[i] == 5) // high green deck
       {
-        std::cout << "index is 4 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 5" << std::endl;
+        if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 5 and highCardMatches is true." << std::endl;
+          position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 5 but hCM isn't true." << std::endl;
       }
-      std::cout << "index is 4 but hCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 5) // high green deck
-    {
-      std::cout << "index is 5" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      else if (randomIndex[i] == 6) // low blue deck
       {
-        std::cout << "index is 5 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 6" << std::endl;
+        if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 6 and lowCardMatches is true." << std::endl;
+          position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 6 but lCM isn't true." << std::endl;
       }
-      std::cout << "index is 5 but hCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 6) // low blue deck
-    {
-      std::cout << "index is 6" << std::endl;
-      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
+      else if (randomIndex[i] == 8) // high blue deck
       {
-        std::cout << "index is 6 and lowCardMatches is true." << std::endl;
-        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 8" << std::endl;
+        if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 8 and highCardMatches is true." << std::endl;
+          position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 8 but hCM isn't true." << std::endl;
       }
-      std::cout << "index is 6 but lCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 7) // blue eleven deck
-    {
-      std::cout << "index is 7" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      else if (randomIndex[i] == 9) // low yellow deck
       {
-        std::cout << "index is 7 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 9" << std::endl;
+        if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 9 and lowCardMatches is true." << std::endl;
+          position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 9 but lCM isn't true." << std::endl;
       }
-      std::cout << "index is 7 but hCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 8) // high blue deck
-    {
-      std::cout << "index is 8" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+      else if (randomIndex[i] == 11) // high yellow deck
       {
-        std::cout << "index is 8 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
+        std::cout << "index is 11" << std::endl;
+        if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
+        {
+          std::cout << "index is 11 and highCardMatches is true." << std::endl;
+          position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
+          std::cout << "position has been assigned." << std::endl;
+        }
+        std::cout << "index is 11 but hCM isn't true." << std::endl;
       }
-      std::cout << "index is 8 but hCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 9) // low yellow deck
-    {
-      std::cout << "index is 9" << std::endl;
-      if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
-      {
-        std::cout << "index is 9 and lowCardMatches is true." << std::endl;
-        position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
-      }
-      std::cout << "index is 9 but lCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 10) // yellow eleven deck
-    {
-      std::cout << "index is 10" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
-      {
-        std::cout << "index is 10 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
-      }
-      std::cout << "index is 10 but hCM isn't true." << std::endl;
-    }
-    else if (randomIndex[i] == 11) // high eleven deck
-    {
-      std::cout << "index is 11" << std::endl;
-      if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
-      {
-        std::cout << "index is 11 and highCardMatches is true." << std::endl;
-        position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-        std::cout << "position has been assigned." << std::endl;
-      }
-      std::cout << "index is 11 but hCM isn't true." << std::endl;
     }
     std::cout << "index isn't 0-11" << std::endl;
   }
@@ -660,49 +638,97 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
 
 bool lowCardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
 {
-  auto topTableCardNumber = tableDecks[indexVector[i]].back().getNumber();
-  auto color = tableIndexToChar(i);
-  for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+  if (!tableDecks[indexVector[i]].empty())
   {
-    // if the number of the card in hand is equal to the top of the deck - 1
-    if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == color))
+    // if the deck being looked at has cards on it
+    auto topTableCardNumber = tableDecks[indexVector[i]].back().getNumber();
+    auto color = tableIndexToChar(i, indexVector);
+
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
     {
-      return true;
+      // if the number of the card in hand is equal to the top of the deck - 1
+      if ((it->getNumber() == topTableCardNumber - 1) && (it->getColor() == color))
+      {
+        return true;
+      }
+    }
+  }
+  else
+  {
+    // if the deck being looked at is empty, get color of the deck
+    auto color = tableIndexToChar(i, indexVector);
+    // number isn't needed because this is the highCardMatches function so card number must be == 12.
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    {
+      // if the number of the card in hand is equal to the top of the deck - 1
+      if ((it->getNumber() == 10) && (it->getColor() == color))
+      {
+        return true;
+      }
     }
   }
 
   return false;
 }
+/*
 
+Goes through all decks to check for a card which will fit.
+Go through low red, check hand for a match.
+Go through high red, check hand for a match.
+etc.
+
+If table deck is empty, check hand for appropriate card to lie down.
+If table deck is not empty, auto topTableCardNumber and try to match that card as before.
+
+*/
 bool highCardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& indexVector)
 {
-  auto topTableCardNumber = tableDecks[indexVector[i]].back().getNumber();
-  auto color = tableIndexToChar(i);
-  for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+  if (!tableDecks[indexVector[i]].empty())
   {
-    // if the number of the card in hand is equal to the top of the deck - 1
-    if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == color))
+    // if the deck being looked at has cards on it
+    auto topTableCardNumber = tableDecks[indexVector[i]].back().getNumber();
+    auto color = tableIndexToChar(i, indexVector);
+
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
     {
-      return true;
+      // if the number of the card in hand is equal to the top of the deck - 1
+      if ((it->getNumber() == topTableCardNumber + 1) && (it->getColor() == color))
+      {
+        return true;
+      }
+    }
+  }
+  else
+  {
+    // if the deck being looked at is empty, get color of the deck
+    auto color = tableIndexToChar(i, indexVector);
+    // number isn't needed because this is the highCardMatches function so card number must be == 12.
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    {
+      // if the number of the card in hand is equal to the top of the deck - 1
+      if ((it->getNumber() == 12) && (it->getColor() == color))
+      {
+        return true;
+      }
     }
   }
 
   return false;
 }
 
-char tableIndexToChar(int i)
+char tableIndexToChar(int i, std::vector<int>& randomIndex)
 {
   char color = ' ';
 
-  if ((i == 0) || (i == 1))
+  if ((randomIndex[i] == 0) || (randomIndex[i] == 2))
   {
     color = 'R';
   }
-  else if ((i == 2) || (i == 3))
+  else if ((randomIndex[i] == 3) || (randomIndex[i] == 5))
   {
     color = 'G';
   }
-  else if ((i == 4) || (i == 5))
+  else if ((randomIndex[i] == 6) || (randomIndex[i] == 8))
   {
     color = 'B';
   }
@@ -769,7 +795,7 @@ bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int p
       }
       else
       {
-        auto color = tableIndexToChar(i);
+        auto color = tableIndexToChar(i, randomIndex);
         // at this point, the bottom red deck is empty.
         // if the deck we're checking is a red deck and the red eleven deck is full.
         if ((color == 'R') && (tableDecks[1].size() != 0)) // red
@@ -859,7 +885,7 @@ bool canPlay(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int p
       }
       else
       {
-        auto color = tableIndexToChar(i);
+        auto color = tableIndexToChar(i, randomIndex);
         // at this point, the top red deck is empty.
         // if the deck we're checking is a red deck and the red eleven deck is full.
         if ((color == 'R') && (tableDecks[1].size() != 0)) // red
