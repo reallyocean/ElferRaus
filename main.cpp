@@ -45,6 +45,7 @@ bool lowCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vec
 bool highCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::vector<int>&);
 bool canPlay(std::vector<Cards>&, std::vector<Cards>&, int);
 void displayBoard(std::vector<Cards>&);
+int colorToTableDeckElevenIndex(char);
 
 int main()
 {
@@ -256,20 +257,42 @@ Cards::iterator getPositionOfCard(std::vector<Cards>& allHands, int player, int 
 
 Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& randomIndex)
 {
-  auto numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() - 1;
-  std::cout << "number has been declared." << std::endl;
+  int numberToBeFoundInDeck{0};
   auto color = tableIndexToChar(i, randomIndex);
   std::cout << "color has been declared." << std::endl;
+
+  if (tableDecks[randomIndex[i]].empty())
+  {
+    numberToBeFoundInDeck = 10;
+    std::cout << "Number to be found is just a 10." << std::endl;
+  }
+  else
+  {
+    numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() - 1;
+    std::cout << "number has been declared." << std::endl;
+  }
 
   return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
 }
 
 Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& randomIndex)
 {
-  auto numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() + 1;
-  std::cout << "number has been declared." << std::endl;
+  int numberToBeFoundInDeck{0};
   auto color = tableIndexToChar(i, randomIndex);
   std::cout << "color has been declared." << std::endl;
+
+  if (tableDecks[randomIndex[i]].empty())
+  {
+    numberToBeFoundInDeck = 12;
+    std::cout << "Number to be found is just a 12." << std::endl;
+  }
+  else
+  {
+    // if this is called in the high green function, if this function is called then we already know there is a green 12 or higher in the deck.
+    // figure out way to identify 10 or 12 of that color.
+    numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() + 1;
+    std::cout << "number has been declared." << std::endl;
+  }
 
   return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
 }
@@ -657,19 +680,49 @@ bool lowCardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks
   {
     // if the deck being looked at is empty, get color of the deck
     auto color = tableIndexToChar(i, indexVector);
+    auto index = colorToTableDeckElevenIndex(color);
     // number isn't needed because this is the highCardMatches function so card number must be == 12.
-    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    // if it's empty, check that there is an eleven for that color first before adding it.
+    if (!tableDecks[index].empty())
     {
-      // if the number of the card in hand is equal to the top of the deck - 1
-      if ((it->getNumber() == 10) && (it->getColor() == color))
+      for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
       {
-        return true;
+        // if the number of the card in hand is equal to the top of the deck - 1
+        if ((it->getNumber() == 10) && (it->getColor() == color))
+        {
+          return true;
+        }
       }
     }
   }
 
   return false;
 }
+
+int colorToTableDeckElevenIndex(char color)
+{
+  int index{0};
+
+  if (color == 'R')
+  {
+    index = 1;
+  }
+  else if (color == 'G')
+  {
+    index = 4;
+  }
+  else if (color == 'B')
+  {
+    index = 7;
+  }
+  else
+  {
+    index = 10;
+  }
+
+  return index;
+}
+
 /*
 
 Goes through all decks to check for a card which will fit.
@@ -702,13 +755,19 @@ bool highCardMatches(std::vector<Cards>& allHands, std::vector<Cards>& tableDeck
   {
     // if the deck being looked at is empty, get color of the deck
     auto color = tableIndexToChar(i, indexVector);
+    auto index = colorToTableDeckElevenIndex(color);
     // number isn't needed because this is the highCardMatches function so card number must be == 12.
-    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    // if it's empty, check that there is an eleven for that color first before adding it.
+    if (!tableDecks[index].empty())
     {
-      // if the number of the card in hand is equal to the top of the deck - 1
-      if ((it->getNumber() == 12) && (it->getColor() == color))
+      // number isn't needed because this is the highCardMatches function so card number must be == 12.
+      for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
       {
-        return true;
+        // if the number of the card in hand is equal to the top of the deck - 1
+        if ((it->getNumber() == 12) && (it->getColor() == color))
+        {
+          return true;
+        }
       }
     }
   }
