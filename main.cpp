@@ -244,16 +244,10 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
   displayBoard(tableDecks);
 }
 
-/*
-
-Cards::iterator getPositionOfCard(std::vector<Cards>& allHands, int player, int number, char color)
+void thirdMove(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int playerCount)
 {
-  auto position = std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == number && card.getColor() == color); });
 
-  return position;
 }
-
-*/
 
 Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& randomIndex)
 {
