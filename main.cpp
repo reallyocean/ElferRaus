@@ -22,7 +22,7 @@ bool redElevenInHands(std::vector<Cards>&);
 bool elevenInHand(std::vector<Cards>&);
 void firstMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int, int&);
 void secondMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int, int&);
-void thirdMove(std::vector<Cards>&, std::vector<Cards>&, int);
+void thirdMove(std::vector<Cards>&, std::vector<Cards>&, int&);
 int getPlayer(std::vector<Cards>&, int, char);
 int getPlayerByCardNumber(std::vector<Cards>&, int);
 Cards::iterator getPositionOfCardByNumber(std::vector<Cards>&, int, int);
@@ -48,7 +48,6 @@ bool highCardMatches(std::vector<Cards>&, std::vector<Cards>&, int, int, std::ve
 bool canPlay(std::vector<Cards>&, std::vector<Cards>&, int);
 void displayBoard(std::vector<Cards>&);
 int colorToTableDeckElevenIndex(char);
-
 
 int main()
 {
