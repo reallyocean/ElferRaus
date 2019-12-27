@@ -14,13 +14,15 @@ using Cards = std::vector<Card>;
 void menu();
 int getPlayerCount();
 std::vector<Cards> deal(int, Cards&);
+std::vector<Card> createDeck();
 void shuffleDeck(Cards&);
 void displayAllHands(std::vector<Cards>&);
 bool elevensInHands(Cards&);
 bool redElevenInHands(std::vector<Cards>&);
 bool elevenInHand(std::vector<Cards>&);
-void firstMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int);
-void secondMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int);
+void firstMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int, int&);
+void secondMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int, int&);
+void thirdMove(std::vector<Cards>&, std::vector<Cards>&, int);
 int getPlayer(std::vector<Cards>&, int, char);
 int getPlayerByCardNumber(std::vector<Cards>&, int);
 Cards::iterator getPositionOfCardByNumber(std::vector<Cards>&, int, int);
@@ -47,10 +49,11 @@ bool canPlay(std::vector<Cards>&, std::vector<Cards>&, int);
 void displayBoard(std::vector<Cards>&);
 int colorToTableDeckElevenIndex(char);
 
+
 int main()
 {
-  Deck d;
-  auto deck = d.getDeck();
+  int player{0};
+  auto deck = createDeck();
   shuffleDeck(deck);
 
   menu();
@@ -61,8 +64,10 @@ int main()
   std::cout << "Size of deck after dealing: " << deck.size() << std::endl;
   displayAllHands(allHands);
 
-  firstMove(allHands, deck, tableDecks, playerCount);
-  secondMove(allHands, deck, tableDecks, playerCount);
+  firstMove(allHands, deck, tableDecks, playerCount, player);
+  std::cout << "Player var after first move: " << player << std::endl;
+  secondMove(allHands, deck, tableDecks, playerCount, player);
+  std::cout << "Player var after second move: " << player << std::endl;
 
   return 0;
 }
@@ -97,6 +102,24 @@ std::vector<Cards> deal(int playerCount, Cards& deck)
   }
 
   return allHands;
+}
+
+std::vector<Card> createDeck()
+{
+  std::vector<int> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+  std::vector<char> colors = {'R', 'G', 'B', 'Y'};
+  std::vector<Card> deck;
+
+  for (size_t i = 0; i < colors.size(); ++i)
+  {
+    for (size_t j = 0; j < numbers.size(); ++j)
+    {
+      Card c(numbers[j], colors[i]);
+      deck.push_back(c);
+    }
+  }
+
+  return deck;
 }
 
 void shuffleDeck(Cards& deck)
@@ -184,7 +207,7 @@ bool hasEleven(std::vector<Cards>& allHands, int player)
 // If red eleven is found, play it and leave first move function.
 // else, Play eleven from random player.
 // else no eleven is found, draw until you get one and play it.
-void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
+void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount, int& player)
 {
   if (elevensInHands(deck))
   {
@@ -192,7 +215,7 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     if (redElevenInHands(allHands))
     {
       std::cout << "There is a red eleven in the hands." << std::endl;
-      auto player = getPlayer(allHands, 11, 'R');
+      player = getPlayer(allHands, 11, 'R');
       auto elevenHand = allHands[player - 1];
       std::cout << "This is player " << player << ". Press Enter to play this card." << std::endl;
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -203,7 +226,7 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     else
     {
       std::cout << "Eleven in the hand but it's not red." << std::endl;
-      auto player = getPlayerByCardNumber(allHands, 11);
+      player = getPlayerByCardNumber(allHands, 11);
       auto position = getPositionOfCardByNumber(allHands, player, 11);
       playCard(position, allHands, tableDecks, player);
     }
@@ -214,7 +237,7 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     std::cout << "Eleven is not in hands. Drawing." << std::endl;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin.ignore();
-    int player{1};
+    player = 1;
     int count{1};
 
     while (!elevensInHands(deck))
@@ -242,6 +265,7 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
     }
   }
   displayBoard(tableDecks);
+  ++player;
 }
 
 void thirdMove(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int playerCount)
@@ -423,10 +447,9 @@ Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vec
   return position;
 }
 
-void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount)
+void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& tableDecks, int playerCount, int& player)
 {
-  int player{1};
-  std::cout << "Starting with player 1." << std::endl;
+  std::cout << "Starting with player " << player << "." << std::endl;
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   std::cin.ignore();
   while (deck.size() != 0)
@@ -624,7 +647,14 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cin.ignore();
           }
-          std::cout << "Player " << player << " can't play after their final draw so it's now player " << player + 1 << "'s turn." << std::endl;
+          if (player == 4)
+          {
+            std::cout << "Player " << player << " can't play after their final draw so it's now player 1's turn." << std::endl;
+          }
+          else
+          {
+            std::cout << "Player " << player << " can't play after their final draw so it's now player " << player + 1 << "'s turn." << std::endl;
+          }
           std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
           std::cin.ignore();
         }
