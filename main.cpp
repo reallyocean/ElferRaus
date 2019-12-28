@@ -22,7 +22,7 @@ bool redElevenInHands(std::vector<Cards>&);
 bool elevenInHand(std::vector<Cards>&);
 void firstMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int, int&);
 void secondMove(std::vector<Cards>&, Cards&, std::vector<Cards>&, int, int&);
-void thirdMove(std::vector<Cards>&, std::vector<Cards>&, int&);
+void thirdMove(std::vector<Cards>&, std::vector<Cards>&, int, int);
 int getPlayer(std::vector<Cards>&, int, char);
 int getPlayerByCardNumber(std::vector<Cards>&, int);
 Cards::iterator getPositionOfCardByNumber(std::vector<Cards>&, int, int);
@@ -267,9 +267,244 @@ void firstMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& ta
   ++player;
 }
 
-void thirdMove(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int playerCount)
+void thirdMove(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int playerCount, int player)
 {
+  int winner{0};
 
+  std::cout << "Starting third move with player " << player << "." << std::endl;
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  std::cin.ignore();
+  while (!allHands[player - 1].empty())
+  {
+    std::cout << "Board:" << std::endl;
+    displayBoard(tableDecks);
+    std::cout << "Player " << player << " is going." << std::endl;
+    std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    {
+      std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
+    if (canPlay(allHands, tableDecks, player))
+    {
+      std::cout << "Player " << player << " can currently play." << std::endl;
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
+      if (hasEleven(allHands, player))
+      {
+        std::cout << "Player " << player << " already has an eleven. Playing it." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        auto position = getPositionOfCardByNumber(allHands, player, 11);
+        std::cout << "Position found." << std::endl;
+        playCard(position, allHands, tableDecks, player);
+        std::cout << "Player " << player << " has played an eleven." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cout << "New board:" << std::endl;
+        displayBoard(tableDecks);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+      }
+      else
+      {
+        std::cout << "Player " << player << " doesn't already have an eleven but can play. Playing card." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
+        std::cout << "Position found." << std::endl;
+        playCard(position, allHands, tableDecks, player);
+        std::cout << "Player " << player << " has played a card." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cout << "New board:" << std::endl;
+        displayBoard(tableDecks);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+      }
+    }
+    else
+    {
+      std::cout << "Player " << player << " can't play so they must draw their first card." << std::endl;
+      std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+      for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+      {
+        std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+      }
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
+      draw(player, allHands, deck);
+      std::cout << "Player " << player << " has drawn their first card." << std::endl;
+      std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+      for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+      {
+        std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+      }
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
+      if (canPlay(allHands, tableDecks, player))
+      {
+        std::cout << "Player " << player << " can now play. Playing card." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
+        std::cout << "Position found." << std::endl;
+        playCard(position, allHands, tableDecks, player);
+        std::cout << "Player " << player << " played a card." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cout << "New board:" << std::endl;
+        displayBoard(tableDecks);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+      }
+      else
+      {
+        std::cout << "Player " << player << " can't play so they must draw their second card." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        draw(player, allHands, deck);
+        std::cout << "Player " << player << " has drawn their second card." << std::endl;
+        std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+        for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+        {
+          std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore();
+        if (canPlay(allHands, tableDecks, player))
+        {
+          std::cout << "Player " << player << " can now play. Playing card." << std::endl;
+          std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+          }
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+          auto position = getPositionOfPlayableCard(allHands, tableDecks, player); // player is 2, allHands is that, tableDecks has one green 11.
+          std::cout << "Position found." << std::endl;
+          playCard(position, allHands, tableDecks, player);
+          std::cout << "Player " << player << " played a card." << std::endl;
+          std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+          }
+          std::cout << "New board:" << std::endl;
+          displayBoard(tableDecks);
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+        }
+        else
+        {
+          std::cout << "Player " << player << " can't play so they must draw a final time." << std::endl;
+          std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+          }
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+          draw(player, allHands, deck);
+          std::cout << "Player " << player << " has drawn their final card." << std::endl;
+          std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+          for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+          {
+            std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+          }
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+          if (canPlay(allHands, tableDecks, player))
+          {
+            std::cout << "Player " << player << " can now play. Playing card." << std::endl;
+            std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+            for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+            {
+              std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+            }
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin.ignore();
+            auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
+            std::cout << "Position found." << std::endl;
+            playCard(position, allHands, tableDecks, player);
+            std::cout << "Player " << player << " played a card." << std::endl;
+            std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+            for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+            {
+              std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+            }
+            std::cout << "New board:" << std::endl;
+            displayBoard(tableDecks);
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin.ignore();
+          }
+          if (player == 4)
+          {
+            std::cout << "Player " << player << " can't play after their final draw so it's now player 1's turn." << std::endl;
+          }
+          else
+          {
+            std::cout << "Player " << player << " can't play after their final draw so it's now player " << player + 1 << "'s turn." << std::endl;
+          }
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin.ignore();
+        }
+      }
+    }
+    std::cout << "Player " << player << " is being incremented." << std::endl;
+    std::cout << "But first, the deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
+    for (auto it = allHands[player - 1].begin(); it != allHands[player - 1].end(); ++it)
+    {
+      std::cout << "Card color: " << it->getColor() << " and number: " << it->getNumber() << std::endl;
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
+    winner = player;
+    ++player;
+    if (player == playerCount + 1)
+    {
+      std::cout << "Player " << player << " is being reset to 1." << std::endl;
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore();
+      player = 1;
+    }
+    std::cout << "End of while loop. Resetting." << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
+  }
+  std::cout << "Player " << winner << " has played their last card." << std::endl;
+  std::cout << "Player " << winner << " wins!" << std::endl;
 }
 
 Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int player, int i, std::vector<int>& randomIndex)
