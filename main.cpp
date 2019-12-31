@@ -55,21 +55,29 @@ int main()
   int winner{0};
   bool keepPlaying = true;
 
+  // Create and shuffle deck
   auto deck = createDeck();
   shuffleDeck(deck);
 
+  // Display menu
   menu();
+
+  // Get player count and deal to player(s)
   auto playerCount = getPlayerCount();
   auto allHands = deal(playerCount, deck);
+
+  // Create empty table decks and display player(s)' hands
   std::vector<Cards> tableDecks(12);
   displayBoard(tableDecks);
   displayAllHands(allHands);
 
+  // Find first eleven and play it
   firstMove(allHands, deck, tableDecks, playerCount, player);
+  // Play through game until deck is gone or until someone wins
   secondMove(allHands, deck, tableDecks, playerCount, player, winner, keepPlaying);
   std::cout << "Player " << winner << " has played their last card." << std::endl;
   std::cout << "Player " << winner << " wins!" << std::endl;
-
+  // If no one has won before deck runs out, continue playing until someone wins
   if (keepPlaying)
   {
     thirdMove(allHands, tableDecks, playerCount, player, winner);
@@ -81,11 +89,19 @@ int main()
   return 0;
 }
 
+/*
+ * Display menu
+ */
 void menu()
 {
   std::cout << "Welcome!" << std::endl;
 }
 
+/*
+ * Get player count
+ *
+ * @return int player count
+ */
 int getPlayerCount()
 {
   auto playerCount = getSafeInput(4, "Enter the number of players. (1-4)");
@@ -93,6 +109,13 @@ int getPlayerCount()
   return playerCount;
 }
 
+/*
+ * Fill vector of vector of integers from file
+ *
+ * @param int playerCount Player count
+ * @param Cards& deck Vector filled with Card objects (Deck)
+ * @return std::vector<Cards> vector filled with vectors of Card objects (All players' hands)
+ */
 std::vector<Cards> deal(int playerCount, Cards& deck)
 {
   const int HAND_SIZE = 7;
