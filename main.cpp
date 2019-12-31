@@ -63,7 +63,6 @@ int main()
   auto allHands = deal(playerCount, deck);
   std::vector<Cards> tableDecks(12);
   displayBoard(tableDecks);
-  std::cout << "Size of deck after dealing: " << deck.size() << std::endl;
   displayAllHands(allHands);
 
   firstMove(allHands, deck, tableDecks, playerCount, player);
@@ -311,7 +310,6 @@ void thirdMove(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.ignore();
         auto position = getPositionOfCardByNumber(allHands, player, 11);
-        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
         std::cout << "Player " << player << " has played an eleven." << std::endl;
         std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
@@ -335,7 +333,6 @@ void thirdMove(std::vector<Cards>& allHands, std::vector<Cards>& tableDecks, int
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.ignore();
         auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
-        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
         std::cout << "Player " << player << " has played a card." << std::endl;
         std::cout << "Player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
@@ -395,17 +392,14 @@ Cards::iterator lowCardPosition(std::vector<Cards>& allHands, std::vector<Cards>
 {
   int numberToBeFoundInDeck{0};
   auto color = tableIndexToChar(i, randomIndex);
-  std::cout << "color has been declared." << std::endl;
 
   if (tableDecks[randomIndex[i]].empty())
   {
     numberToBeFoundInDeck = 10;
-    std::cout << "Number to be found is just a 10." << std::endl;
   }
   else
   {
     numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() - 1;
-    std::cout << "number has been declared." << std::endl;
   }
 
   return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
@@ -415,19 +409,16 @@ Cards::iterator highCardPosition(std::vector<Cards>& allHands, std::vector<Cards
 {
   int numberToBeFoundInDeck{0};
   auto color = tableIndexToChar(i, randomIndex);
-  std::cout << "color has been declared." << std::endl;
 
   if (tableDecks[randomIndex[i]].empty())
   {
     numberToBeFoundInDeck = 12;
-    std::cout << "Number to be found is just a 12." << std::endl;
   }
   else
   {
     // if this is called in the high green function, if this function is called then we already know there is a green 12 or higher in the deck.
     // figure out way to identify 10 or 12 of that color.
     numberToBeFoundInDeck = tableDecks[randomIndex[i]].back().getNumber() + 1;
-    std::cout << "number has been declared." << std::endl;
   }
 
   return std::find_if(allHands[player - 1].begin(), allHands[player - 1].end(), [&](Card& card){ return (card.getNumber() == numberToBeFoundInDeck && card.getColor() == color); });
@@ -461,7 +452,6 @@ Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vec
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin.ignore();
     position = getPositionOfCardByNumber(allHands, player, 11);
-    std::cout << "Position found." << std::endl;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin.ignore();
   }
@@ -472,94 +462,61 @@ Cards::iterator getPositionOfPlayableCard(std::vector<Cards>& allHands, std::vec
     {
       if (randomIndex[i] == 0) // low red deck
       {
-        std::cout << "index is 0" << std::endl;
         if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 0 and lowCardMatches is true." << std::endl;
           position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 0 but lCM isn't true." << std::endl;
       }
       else if (randomIndex[i] == 2) // high red deck
       {
-        std::cout << "index is 2" << std::endl;
         if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 2 and highCardMatches is true." << std::endl;
           position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 2 but hCM isn't true." << std::endl;
       }
       else if (randomIndex[i] == 3) // low green deck
       {
-        std::cout << "index is 3" << std::endl;
         if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 3 and lowCardMatches is true." << std::endl;
           position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 3 but lCM isn't true." << std::endl;
       }
       else if (randomIndex[i] == 5) // high green deck
       {
-        std::cout << "index is 5" << std::endl;
         if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 5 and highCardMatches is true." << std::endl;
           position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 5 but hCM isn't true." << std::endl;
       }
       else if (randomIndex[i] == 6) // low blue deck
       {
-        std::cout << "index is 6" << std::endl;
         if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 6 and lowCardMatches is true." << std::endl;
           position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 6 but lCM isn't true." << std::endl;
       }
       else if (randomIndex[i] == 8) // high blue deck
       {
-        std::cout << "index is 8" << std::endl;
         if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 8 and highCardMatches is true." << std::endl;
           position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 8 but hCM isn't true." << std::endl;
       }
       else if (randomIndex[i] == 9) // low yellow deck
       {
-        std::cout << "index is 9" << std::endl;
         if (lowCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 9 and lowCardMatches is true." << std::endl;
           position = lowCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 9 but lCM isn't true." << std::endl;
       }
       else if (randomIndex[i] == 11) // high yellow deck
       {
-        std::cout << "index is 11" << std::endl;
         if (highCardMatches(allHands, tableDecks, player, i, randomIndex))
         {
-          std::cout << "index is 11 and highCardMatches is true." << std::endl;
           position = highCardPosition(allHands, tableDecks, player, i, randomIndex);
-          std::cout << "position has been assigned." << std::endl;
         }
-        std::cout << "index is 11 but hCM isn't true." << std::endl;
       }
     }
-    std::cout << "index isn't 0-11" << std::endl;
   }
 
   return position;
@@ -598,7 +555,6 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.ignore();
         auto position = getPositionOfCardByNumber(allHands, player, 11);
-        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
         std::cout << "Player " << player << " has played an eleven." << std::endl;
         std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
@@ -622,7 +578,6 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.ignore();
         auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
-        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
         std::cout << "Player " << player << " has played a card." << std::endl;
         std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
@@ -666,7 +621,6 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.ignore();
         auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
-        std::cout << "Position found." << std::endl;
         playCard(position, allHands, tableDecks, player);
         std::cout << "Player " << player << " played a card." << std::endl;
         std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
@@ -709,7 +663,6 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
           std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
           std::cin.ignore();
           auto position = getPositionOfPlayableCard(allHands, tableDecks, player); // player is 2, allHands is that, tableDecks has one green 11.
-          std::cout << "Position found." << std::endl;
           playCard(position, allHands, tableDecks, player);
           std::cout << "Player " << player << " played a card." << std::endl;
           std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
@@ -752,7 +705,6 @@ void secondMove(std::vector<Cards>& allHands, Cards& deck, std::vector<Cards>& t
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cin.ignore();
             auto position = getPositionOfPlayableCard(allHands, tableDecks, player);
-            std::cout << "Position found." << std::endl;
             playCard(position, allHands, tableDecks, player);
             std::cout << "Player " << player << " played a card." << std::endl;
             std::cout << "Current deck size: " << deck.size() << ", player " << player << "'s hand size: " << allHands[player - 1].size() << ", player " << player << "'s hand: " << std::endl;
