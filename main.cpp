@@ -73,10 +73,12 @@ int main()
 
   // Find first eleven and play it
   firstMove(allHands, deck, tableDecks, playerCount, player);
+  
   // Play through game until deck is gone or until someone wins
   secondMove(allHands, deck, tableDecks, playerCount, player, winner, keepPlaying);
   std::cout << "Player " << winner << " has played their last card." << std::endl;
   std::cout << "Player " << winner << " wins!" << std::endl;
+
   // If no one has won before deck runs out, continue playing until someone wins
   if (keepPlaying)
   {
